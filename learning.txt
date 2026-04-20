@@ -1,0 +1,8 @@
+What I have learned so far:
+
+the make keyword is commonly used to instantiate maps, slices and channels.
+the delete keyword is used to delete a keyvalue from a map.
+
+<- apparently pops a value from a queue?
+
+
