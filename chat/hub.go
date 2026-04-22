@@ -26,8 +26,8 @@ type Hub struct {
 }
 
 type Message struct {
-	destination int `json:"destination"`
-	content string `json:"content"`
+	Destination int `json:"destination"`
+	Content string `json:"content"`
 }
 
 func newHub() *Hub {
@@ -59,7 +59,7 @@ func (h *Hub) run() {
 				panic(err)
 			}
 			fmt.Println(messageJSON)
-			content := []byte(messageJSON.content)
+			content := []byte(messageJSON.Content)
 			for client := range h.clients {
 				select {
 				case client.send <- content:
