@@ -4,6 +4,11 @@
 
 package main
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.
 type Hub struct {
@@ -20,6 +25,11 @@ type Hub struct {
 	unregister chan *Client
 }
 
+type Message struct {
+	destination int `json:"destination"`
+	content string `json:"content"`
+}
+
 func newHub() *Hub {
 	return &Hub{
 		broadcast:  make(chan []byte),
@@ -30,6 +40,7 @@ func newHub() *Hub {
 }
 
 func (h *Hub) run() {
+	var messageJSON Message
 	for {
 		select {
 		case client := <-h.register:
@@ -40,9 +51,18 @@ func (h *Hub) run() {
 				close(client.send)
 			}
 		case message := <-h.broadcast:
+			fmt.Println(message)
+			messageStr := string(message)
+			fmt.Println(messageStr)
+			err := json.Unmarshal(message, &messageJSON)
+			if err != nil{
+				panic(err)
+			}
+			fmt.Println(messageJSON)
+			content := []byte(messageJSON.content)
 			for client := range h.clients {
 				select {
-				case client.send <- message:
+				case client.send <- content:
 				default:
 					close(client.send)
 					delete(h.clients, client)

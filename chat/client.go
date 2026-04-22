@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"time"
-	"fmt"
 
 	"github.com/gorilla/websocket"
 )
@@ -39,6 +38,8 @@ var upgrader = websocket.Upgrader{
 
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
+	// userID int
+
 	hub *Hub
 
 	// The websocket connection.
@@ -63,7 +64,6 @@ func (c *Client) readPump() {
 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
 		_, message, err := c.conn.ReadMessage()
-		fmt.Println(message)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)

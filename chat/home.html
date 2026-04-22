@@ -5,6 +5,7 @@
 <script type="text/javascript">
 window.onload = function () {
   var conn;
+  var dest = document.getElementById("destination");
   var msg = document.getElementById("msg");
   var log = document.getElementById("log");
 
@@ -36,8 +37,9 @@ window.onload = function () {
     if (!msg.value) {
       return false;
     }
-    getUser()
-    conn.send(msg.value);
+    var message = {destination: parseInt(dest.value), content: msg.value};
+    var messageJSON = JSON.stringify(message);
+    conn.send(messageJSON);
     msg.value = "";
     return false;
   };
@@ -107,6 +109,7 @@ body {
 <form id="form">
     <input type="submit" value="Send" />
     <input type="text" id="msg" size="64" autofocus />
+    <input type="number" id="destination" />
 </form>
 </body>
 </html>
