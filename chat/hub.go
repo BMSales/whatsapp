@@ -25,10 +25,11 @@ type Hub struct {
 	unregister chan *Client
 }
 
-type Message struct {
-	Destination int `json:"destination"`
-	Content string `json:"content"`
-}
+// type Message struct {
+// 	Set_Num int `json:"set_num"`
+// 	Destination int `json:"destination"`
+// 	Content string `json:"content"`
+// }
 
 func newHub() *Hub {
 	return &Hub{
@@ -58,9 +59,13 @@ func (h *Hub) run() {
 			if err != nil{
 				panic(err)
 			}
-			fmt.Println(messageJSON)
+			destination := messageJSON.Destination
 			content := []byte(messageJSON.Content)
+
 			for client := range h.clients {
+				if client.phone != destination {
+					continue
+				}
 				select {
 				case client.send <- content:
 				default:

@@ -5,6 +5,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -36,6 +37,12 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
+type Message struct {
+	Set_Num int `json:"set_num"`
+	Destination int `json:"destination"`
+	Content string `json:"content"`
+}
+
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
 	// userID int
@@ -47,6 +54,8 @@ type Client struct {
 
 	// Buffered channel of outbound messages.
 	send chan []byte
+
+	phone int
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -55,6 +64,7 @@ type Client struct {
 // ensures that there is at most one reader on a connection by executing all
 // reads from this goroutine.
 func (c *Client) readPump() {
+	var messageJSON Message
 	defer func() {
 		c.hub.unregister <- c
 		c.conn.Close()
@@ -71,6 +81,11 @@ func (c *Client) readPump() {
 			break
 		}
 		// message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
+		err = json.Unmarshal(message, &messageJSON)
+		if err != nil {
+			panic(err)
+		} 
+		c.phone = messageJSON.Set_Num
 		c.hub.broadcast <- message
 	}
 }
@@ -128,7 +143,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
+	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), phone: 0}
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in

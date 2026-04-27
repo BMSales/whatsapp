@@ -4,8 +4,10 @@
 <title>Chat Example</title>
 <script type="text/javascript">
 window.onload = function () {
+  var item;
   var conn;
-  var dest = document.getElementById("destination");
+  var set_num = document.getElementById("set_num");
+  var dest = document.getElementById("dest");
   var msg = document.getElementById("msg");
   var log = document.getElementById("log");
 
@@ -37,8 +39,12 @@ window.onload = function () {
     if (!msg.value) {
       return false;
     }
-    var message = {destination: parseInt(dest.value), content: msg.value};
+
+    var message = {set_num: parseInt(set_num.value), destination: parseInt(dest.value), content: msg.value};
     var messageJSON = JSON.stringify(message);
+    item = document.createElement("div");
+    item.innerText = msg.value;
+    appendLog(item);
     conn.send(messageJSON);
     msg.value = "";
     return false;
@@ -54,7 +60,7 @@ window.onload = function () {
     conn.onmessage = function (evt) {
       var messages = evt.data.split('\n');
       for (var i = 0; i < messages.length; i++) {
-        var item = document.createElement("div");
+        item = document.createElement("div");
         item.innerText = messages[i];
         appendLog(item);
       }
@@ -88,7 +94,7 @@ body {
     top: 0.5em;
     left: 0.5em;
     right: 0.5em;
-    bottom: 3em;
+    bottom: 9em;
     overflow: auto;
 }
 
@@ -107,9 +113,13 @@ body {
 <body>
 <div id="log"></div>
 <form id="form">
+    <label>Set phone number:</label><br>
+    <input type="number" id="set_num" /><br>
+    <label>Message:</label><br>
+    <input type="text" id="msg" size="64" autofocus /><br>
+    <label>To:</label><br>
+    <input type="number" id="dest" />
     <input type="submit" value="Send" />
-    <input type="text" id="msg" size="64" autofocus />
-    <input type="number" id="destination" />
 </form>
 </body>
 </html>
