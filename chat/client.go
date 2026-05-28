@@ -7,7 +7,9 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"math/rand"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -38,13 +40,12 @@ var upgrader = websocket.Upgrader{
 }
 
 type Message struct {
-	Set_Num int `json:"set_num"`
 	Destination int `json:"destination"`
 	Content string `json:"content"`
 }
 
-// Client is a middleman between the websocket connection and the hub.
-type Client struct {
+// Websock is a middleman between the websocket connection and the hub.
+type Websock struct {
 	// userID int
 
 	hub *Hub
@@ -63,7 +64,7 @@ type Client struct {
 // The application runs readPump in a per-connection goroutine. The application
 // ensures that there is at most one reader on a connection by executing all
 // reads from this goroutine.
-func (c *Client) readPump() {
+func (c *Websock) readPump() {
 	var messageJSON Message
 	defer func() {
 		c.hub.unregister <- c
@@ -85,7 +86,6 @@ func (c *Client) readPump() {
 		if err != nil {
 			panic(err)
 		} 
-		c.phone = messageJSON.Set_Num
 		c.hub.broadcast <- message
 	}
 }
@@ -95,7 +95,7 @@ func (c *Client) readPump() {
 // A goroutine running writePump is started for each connection. The
 // application ensures that there is at most one writer to a connection by
 // executing all writes from this goroutine.
-func (c *Client) writePump() {
+func (c *Websock) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
@@ -138,16 +138,28 @@ func (c *Client) writePump() {
 
 // serveWs handles websocket requests from the peer.
 func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	var messageJSON Message
+	var message []byte
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256), phone: 0}
-	client.hub.register <- client
+	websock := &Websock{hub: hub, conn: conn, send: make(chan []byte, 256), phone: rand.Intn(10000)}
+	messageJSON.Destination = websock.phone
+	messageJSON.Content = "Your phone number is: " + strconv.Itoa(websock.phone)
+
+	message, err = json.Marshal(messageJSON)
+	if err != nil {
+		panic(err)
+	}
+	
+	websock.hub.register <- websock
+	websock.hub.broadcast <- message
 
 	// Allow collection of memory referenced by the caller by doing all work in
 	// new goroutines.
-	go client.writePump()
-	go client.readPump()
+	go websock.writePump()
+	go websock.readPump()
 }

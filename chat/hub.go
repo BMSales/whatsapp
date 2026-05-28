@@ -9,20 +9,20 @@ import (
 	"fmt"
 )
 
-// Hub maintains the set of active clients and broadcasts messages to the
-// clients.
+// Hub maintains the set of active websocks and broadcasts messages to the
+// websocks.
 type Hub struct {
-	// Registered clients.
-	clients map[*Client]bool
+	// Registered websocks.
+	websocks map[int]*Websock
 
-	// Inbound messages from the clients.
+	// Inbound messages from the websocks.
 	broadcast chan []byte
 
-	// Register requests from the clients.
-	register chan *Client
+	// Register requests from the websocks.
+	register chan *Websock
 
-	// Unregister requests from clients.
-	unregister chan *Client
+	// Unregister requests from websocks.
+	unregister chan *Websock
 }
 
 // type Message struct {
@@ -34,9 +34,9 @@ type Hub struct {
 func newHub() *Hub {
 	return &Hub{
 		broadcast:  make(chan []byte),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
-		clients:    make(map[*Client]bool),
+		register:   make(chan *Websock),
+		unregister: make(chan *Websock),
+		websocks:   make(map[int]*Websock),
 	}
 }
 
@@ -44,12 +44,12 @@ func (h *Hub) run() {
 	var messageJSON Message
 	for {
 		select {
-		case client := <-h.register:
-			h.clients[client] = true
-		case client := <-h.unregister:
-			if _, ok := h.clients[client]; ok {
-				delete(h.clients, client)
-				close(client.send)
+		case websock := <-h.register:
+			h.websocks[websock.phone] = websock
+		case websock := <-h.unregister:
+			if _, ok := h.websocks[websock.phone]; ok {
+				delete(h.websocks, websock.phone)
+				close(websock.send)
 			}
 		case message := <-h.broadcast:
 			fmt.Println(message)
@@ -60,17 +60,29 @@ func (h *Hub) run() {
 				panic(err)
 			}
 			destination := messageJSON.Destination
+			fmt.Println(destination)
 			content := []byte(messageJSON.Content)
 
-			for client := range h.clients {
-				if client.phone != destination {
-					continue
-				}
+			// for websock := range h.websocks {
+			// 	if websock.phone != destination {
+			// 		continue
+			// 	}
+			// 	select {
+			// 	case websock.send <- content:
+			// 	default:
+			// 		// if for whatever reason the hub can't send the message to the websock,
+			// 		// then remove the websock from the hash map.
+			// 		close(websock.send)
+			// 		delete(h.websocks, websock)
+			// 	}
+			// }
+
+			if websock, ok := h.websocks[destination]; ok {
 				select {
-				case client.send <- content:
-				default:
-					close(client.send)
-					delete(h.clients, client)
+					case websock.send <- content:
+					default:
+						close(websock.send)
+						delete(h.websocks, websock.phone)
 				}
 			}
 		}

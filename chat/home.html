@@ -6,7 +6,6 @@
 window.onload = function () {
   var item;
   var conn;
-  var set_num = document.getElementById("set_num");
   var dest = document.getElementById("dest");
   var msg = document.getElementById("msg");
   var log = document.getElementById("log");
@@ -40,7 +39,7 @@ window.onload = function () {
       return false;
     }
 
-    var message = {set_num: parseInt(set_num.value), destination: parseInt(dest.value), content: msg.value};
+    var message = {destination: parseInt(dest.value), content: msg.value};
     var messageJSON = JSON.stringify(message);
     item = document.createElement("div");
     item.innerText = msg.value;
@@ -113,8 +112,6 @@ body {
 <body>
 <div id="log"></div>
 <form id="form">
-    <label>Set phone number:</label><br>
-    <input type="number" id="set_num" /><br>
     <label>Message:</label><br>
     <input type="text" id="msg" size="64" autofocus /><br>
     <label>To:</label><br>
