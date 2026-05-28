@@ -10,12 +10,16 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 )
 
 const (
 	host     = "localhost"
-	port     = 5433
+	port     = 5432
 	user     = "postgres"
 	password = "postgres"
 	dbname   = "test"
@@ -41,37 +45,6 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "home.html")
 }
 
-// func getUser(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-// 	insertUser := `insert into "users"("name", "phone") values($1, $2)`
-// 	_, e := db.Exec(insertUser, "Bob", 100)
-// 	if e != nil {
-// 		panic(e)
-// 	}
-//
-// 	row, err := db.Query(`select "name" from "users" where "id"=$1`, 13)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-//
-// 	var name string
-// 	row.Next()
-// 	err = row.Scan(&name)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-//
-// 	fmt.Println(name)
-//
-// 	user_json := &zap_user{
-// 		Name: name,
-// 		Phone: 1,
-// 	}
-// 	user_json_marsh, _ := json.Marshal(user_json)
-//
-// 	w.Header().Set("Content-Type", "application/json")
-// 	fmt.Fprint(w, string(user_json_marsh))
-// }
-
 func main() {
 	flag.Parse()
 	hub := newHub()
@@ -84,13 +57,32 @@ func main() {
 	}
 	defer db.Close()
 
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	if err != nil {
+		panic(err)
+	}
+
+	m, err := migrate.NewWithDatabaseInstance(
+		"file://migrations",
+		"postgres",
+		driver,
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = m.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		panic(err)
+	}
+
+	fmt.Println("Migrations applied successfully")
+
 	http.HandleFunc("/", serveHome)
-	// http.HandleFunc("/getUser", func(w http.ResponseWriter, r *http.Request) {
-	// 	getUser(db, w, r)
-	// })
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})
+
 	err = http.ListenAndServe(*addr, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
