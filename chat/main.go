@@ -25,24 +25,42 @@ const (
 	dbname   = "test"
 )
 
-type zap_user struct {
-	Name string `json:"name"`
-	Phone int `json:"phone_number"`
+type UserRegister struct {
+	Username string `json:"username"`
+	Phone_number string `json:"phone_number"`
 }
 
 var addr = flag.String("addr", ":8080", "http service address")
 
 func serveHome(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL)
+
 	if r.URL.Path != "/" {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
+
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
 	http.ServeFile(w, r, "home.html")
+}
+
+func register(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+	var data UserRegister
+
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		panic(err)
+	}
+
+	insertUser := `insert into "users"("username", "phone_number") values($1, $2)`
+	_, err = db.Exec(insertUser, data.username, data.phone_number)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func main() {

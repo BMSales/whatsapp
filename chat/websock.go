@@ -40,7 +40,7 @@ var upgrader = websocket.Upgrader{
 }
 
 type Message struct {
-	Destination int `json:"destination"`
+	Destination string `json:"destination"`
 	Content string `json:"content"`
 }
 
@@ -56,7 +56,7 @@ type Websock struct {
 	// Buffered channel of outbound messages.
 	send chan []byte
 
-	phone int
+	phone string
 }
 
 // readPump pumps messages from the websocket connection to the hub.
@@ -146,7 +146,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	websock := &Websock{hub: hub, conn: conn, send: make(chan []byte, 256), phone: rand.Intn(10000)}
+	websock := &Websock{hub: hub, conn: conn, send: make(chan []byte, 256), phone: "2299235-3932"}
 	messageJSON.Destination = websock.phone
 	messageJSON.Content = "Your phone number is: " + strconv.Itoa(websock.phone)
 

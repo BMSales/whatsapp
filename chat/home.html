@@ -6,6 +6,8 @@
 window.onload = function () {
   var item;
   var conn;
+	var regName = document.getElementById("regName");
+	var regPhone = document.getElementById("regPhone");
   var dest = document.getElementById("dest");
   var msg = document.getElementById("msg");
   var log = document.getElementById("log");
@@ -18,17 +20,29 @@ window.onload = function () {
     }
   }
 
-  function getUser() {
-    fetch("/getUser")
-      .then(function(response) {
-        return response.json();
-      })
-
-      .then(function(data) {
-        var user_name = document.createElement("div");
-        user_name.innerText = data.name;
-        appendLog(user_name);
-      });
+  function register() {
+		var jsonData = {username: regName.value, phone_number: regPhone.value};
+    fetch('/register', {
+				method: 'POST',
+				headers: {
+						'Content-Type': 'application/json',
+				},
+				body: jsonData,
+		})
+		.then(response => {
+				if (!response.ok) {
+						throw new Error(`HTTP error! Status: ${response.status}`);
+				}
+				return response.json();
+		})
+		.then(data => {
+				console.log('Server Response:', data);
+				alert('Data submitted successfully!');
+		})
+		.catch(error => {
+				console.error('Error:', error);
+				alert('Failed to submit data.');
+		});
   }
 
   document.getElementById("form").onsubmit = function () {

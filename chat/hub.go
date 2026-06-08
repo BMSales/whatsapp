@@ -36,7 +36,7 @@ func newHub() *Hub {
 		broadcast:  make(chan []byte),
 		register:   make(chan *Websock),
 		unregister: make(chan *Websock),
-		websocks:   make(map[int]*Websock),
+		websocks:   make(map[string]*Websock),
 	}
 }
 
