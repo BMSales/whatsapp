@@ -47,7 +47,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.ServeFile(w, r, "html/register.html")
+	http.ServeFile(w, r, "html/home.html")
 }
 
 func register(db *sql.DB, w http.ResponseWriter, r *http.Request) {

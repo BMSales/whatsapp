@@ -6,8 +6,6 @@
 window.onload = function () {
   var item;
   var conn;
-	var regName = document.getElementById("regName");
-	var regPhone = document.getElementById("regPhone");
   var dest = document.getElementById("dest");
   var msg = document.getElementById("msg");
   var log = document.getElementById("log");
@@ -20,31 +18,6 @@ window.onload = function () {
     }
   }
 
-  function register() {
-		var jsonData = {username: regName.value, phone_number: regPhone.value};
-    fetch('http://localhost:8080/register', {
-				method: 'POST',
-				headers: {
-						'Content-Type': 'application/json',
-				},
-				body: jsonData,
-		})
-		.then(response => {
-				if (!response.ok) {
-						throw new Error(`HTTP error! Status: ${response.status}`);
-				}
-				return response.json();
-		})
-		.then(data => {
-				console.log('Server Response:', data);
-				alert('Data submitted successfully!');
-		})
-		.catch(error => {
-				console.error('Error:', error);
-				alert('Failed to submit data.');
-		});
-  }
-
   document.getElementById("form").onsubmit = function () {
     if (!conn) {
       return false;
@@ -53,7 +26,7 @@ window.onload = function () {
       return false;
     }
 
-    var message = {destination: parseInt(dest.value), content: msg.value};
+    var message = {destination: dest.value, content: msg.value};
     var messageJSON = JSON.stringify(message);
     item = document.createElement("div");
     item.innerText = msg.value;
@@ -129,7 +102,7 @@ body {
     <label>Message:</label><br>
     <input type="text" id="msg" size="64" autofocus /><br>
     <label>To:</label><br>
-    <input type="number" id="dest" />
+    <input type="text" id="msg" size="64" autofocus /><br>
     <input type="submit" value="Send" />
 </form>
 </body>
