@@ -6,6 +6,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -45,22 +46,35 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.ServeFile(w, r, "home.html")
+	http.ServeFile(w, r, "register.html")
 }
 
 func register(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	var data UserRegister
 
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		panic(err)
+	if r.URL.Path != "/register" {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
 	}
 
-	insertUser := `insert into "users"("username", "phone_number") values($1, $2)`
-	_, err = db.Exec(insertUser, data.username, data.phone_number)
-	if err != nil {
-		panic(err)
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
 	}
+
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+  }
+
+	insertUser := `insert into "users"("username", "phone_number") values($1, $2)`
+	_, err = db.Exec(insertUser, data.Username, data.Phone_number)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	fmt.Println("user registered successfully!")
 }
 
 func main() {
@@ -97,6 +111,9 @@ func main() {
 	fmt.Println("Migrations applied successfully")
 
 	http.HandleFunc("/", serveHome)
+	http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
+		register(db, w, r)
+	})
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(hub, w, r)
 	})

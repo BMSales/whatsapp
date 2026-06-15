@@ -13,7 +13,7 @@ import (
 // websocks.
 type Hub struct {
 	// Registered websocks.
-	websocks map[int]*Websock
+	websocks map[string]*Websock
 
 	// Inbound messages from the websocks.
 	broadcast chan []byte

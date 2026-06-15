@@ -7,9 +7,7 @@ package main
 import (
 	"encoding/json"
 	"log"
-	"math/rand"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -148,7 +146,7 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 	websock := &Websock{hub: hub, conn: conn, send: make(chan []byte, 256), phone: "2299235-3932"}
 	messageJSON.Destination = websock.phone
-	messageJSON.Content = "Your phone number is: " + strconv.Itoa(websock.phone)
+	messageJSON.Content = "Your phone number is: " + websock.phone
 
 	message, err = json.Marshal(messageJSON)
 	if err != nil {
