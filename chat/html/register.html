@@ -6,6 +6,7 @@
 window.onload = function () {
 	var regName = document.getElementById("regName");
 	var regPhone = document.getElementById("regPhone");
+	var regPass = document.getElementById("regPass");
 
   document.getElementById("form").onsubmit = function () {
     if (!regName.value) {
@@ -15,7 +16,7 @@ window.onload = function () {
       return false;
     }
 
-    var jsonData = {username: regName.value, phone_number: regPhone.value};
+    var jsonData = {username: regName.value, phone_number: regPhone.value, password: regPass.value};
     var json = JSON.stringify(jsonData)
     fetch('http://localhost:8080/register', {
 				method: 'POST',
@@ -73,6 +74,8 @@ body {
     <input type="text" id="regName" size="64" autofocus /><br>
     <label>Phone number:</label><br>
     <input type="text" id="regPhone" size="64" autofocus /><br>
+    <label>Password:</label><br>
+    <input type="text" id="regPass" size="64" autofocus /><br>
     <input type="submit" value="Send" />
 </form>
 </body>

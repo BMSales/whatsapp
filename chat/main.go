@@ -29,6 +29,7 @@ const (
 type UserRegister struct {
 	Username string `json:"username"`
 	Phone_number string `json:"phone_number"`
+	Password string `json:"password"`
 }
 
 var addr = flag.String("addr", ":8080", "http service address")
@@ -46,7 +47,7 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.ServeFile(w, r, "register.html")
+	http.ServeFile(w, r, "html/register.html")
 }
 
 func register(db *sql.DB, w http.ResponseWriter, r *http.Request) {
@@ -68,8 +69,8 @@ func register(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
   }
 
-	insertUser := `insert into "users"("username", "phone_number") values($1, $2)`
-	_, err = db.Exec(insertUser, data.Username, data.Phone_number)
+	insertUser := `insert into "users"("username", "phone_number", "password") values($1, $2, $3)`
+	_, err = db.Exec(insertUser, data.Username, data.Phone_number, data.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
