@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Register</title>
+<script type="text/javascript">
+window.onload = function () {
+	var loginPhone = document.getElementById("loginPhone");
+	var loginPass = document.getElementById("loginPass");
+
+  document.getElementById("form").onsubmit = function () {
+    if (!loginPhone.value) {
+      return false;
+    }
+    if (!loginPass.value) {
+      return false;
+    }
+
+    var jsonData = {phone_number: loginPhone.value, password: loginPass.value};
+    var json = JSON.stringify(jsonData)
+    fetch('http://localhost:8080/login {
+  		method: 'POST',
+  		headers: {
+  				'Content-Type': 'application/json',
+  		},
+  		body:json,
+    })
+  .then(response => {
+  		if (!response.ok) {
+  				throw new Error(`HTTP error! Status: ${response.status}`);
+  		}
+  		return response.json();
+  })
+  .then(data => {
+  		console.log('Server Response:', data);
+  		alert('Data submitted successfully!');
+  })
+  .catch(error => {
+  		console.error('Error:', error);
+  		alert('Failed to submit data.');
+  });
+  };
+};
+</script>
+<style type="text/css">
+html {
+    overflow: hidden;
+}
+
+body {
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background: gray;
+}
+
+#form {
+    padding: 0 0.5em 0 0.5em;
+    margin: 0;
+    position: absolute;
+    bottom: 1em;
+    left: 0px;
+    width: 100%;
+    overflow: hidden;
+}
+
+#register {
+    padding: 0 0.5em 0 0.5em;
+    margin: 0;
+    position: absolute;
+    bottom: 1em;
+    left: 5em;
+    width: 100%;
+    overflow: hidden;
+}
+</style>
+</head>
+<body>
+<form id="form">
+    <label>Phone number:</label><br>
+    <input type="text" id="loginPhone" size="64" autofocus /><br>
+    <label>Password:</label><br>
+    <input type="text" id="loginPass" size="64" autofocus /><br>
+    <input type="submit" value="Send" />
+</form>
+
+<form id="register" action="http://localhost:8080/serveRegister">
+      <input type="submit" value="Register Account">
+</form>
+</body>
+</html>

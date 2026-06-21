@@ -34,9 +34,7 @@ type UserRegister struct {
 
 var addr = flag.String("addr", ":8080", "http service address")
 
-func serveHome(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.URL)
-
+func serveLogin(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
@@ -47,7 +45,21 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.ServeFile(w, r, "html/home.html")
+	http.ServeFile(w, r, "html/login.html")
+}
+
+func serveRegister(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/serveRegister" {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	http.ServeFile(w, r, "html/register.html")
 }
 
 func register(db *sql.DB, w http.ResponseWriter, r *http.Request) {
@@ -73,6 +85,7 @@ func register(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	_, err = db.Exec(insertUser, data.Username, data.Phone_number, data.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	fmt.Println("user registered successfully!")
@@ -111,7 +124,8 @@ func main() {
 
 	fmt.Println("Migrations applied successfully")
 
-	http.HandleFunc("/", serveHome)
+	http.HandleFunc("/", serveLogin)
+	http.HandleFunc("/serveRegister", serveRegister)
 	http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
 		register(db, w, r)
 	})
