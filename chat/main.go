@@ -35,7 +35,7 @@ type UserRegister struct {
 var addr = flag.String("addr", ":8080", "http service address")
 
 func serveLogin(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
+	if r.URL.Path != "/serveLogin" && r.URL.Path != "/" {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
@@ -89,6 +89,8 @@ func register(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println("user registered successfully!")
+
+	http.Redirect(w, r, "http://localhost:8080/serveLogin", http.StatusSeeOther)
 }
 
 func main() {
@@ -125,6 +127,7 @@ func main() {
 	fmt.Println("Migrations applied successfully")
 
 	http.HandleFunc("/", serveLogin)
+	http.HandleFunc("/serveLogin", serveLogin)
 	http.HandleFunc("/serveRegister", serveRegister)
 	http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
 		register(db, w, r)
